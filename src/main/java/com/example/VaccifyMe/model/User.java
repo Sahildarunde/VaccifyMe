@@ -2,12 +2,12 @@ package com.example.VaccifyMe.model;
 
 import com.example.VaccifyMe.Enum.Gender;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.boot.autoconfigure.web.WebProperties;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -15,6 +15,7 @@ import org.springframework.boot.autoconfigure.web.WebProperties;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name="user")
+@Builder
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,4 +42,13 @@ public class User {
 
     @Column(name = "is_dose2_taken")
     boolean isDose2Taken;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    List<Appointment> appointments = new ArrayList<>();
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    Dose1 dose1;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    Dose2 dose2;
 }
