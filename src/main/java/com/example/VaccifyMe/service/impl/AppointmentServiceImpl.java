@@ -7,9 +7,8 @@ import com.example.VaccifyMe.dao.UserRepository;
 import com.example.VaccifyMe.dto.RequestDTO.AppointmentRequestDto;
 import com.example.VaccifyMe.dto.ResponseDTO.AppointmentResponseDto;
 import com.example.VaccifyMe.dto.ResponseDTO.CenterResponseDto;
-import com.example.VaccifyMe.exception.DoctorNotFoundException;
-import com.example.VaccifyMe.exception.NotEligibleForDoseException;
-import com.example.VaccifyMe.exception.UserNotFoundException;
+import com.example.VaccifyMe.dto.ResponseDTO.CertificateResponseDto;
+import com.example.VaccifyMe.exception.*;
 import com.example.VaccifyMe.model.*;
 import com.example.VaccifyMe.service.AppointmentService;
 import com.example.VaccifyMe.service.Dose1Service;
@@ -92,5 +91,45 @@ public class AppointmentServiceImpl implements AppointmentService {
         return AppointmentTransformer.appointmentToResponseDto
                 (appointmentRequestDto.getVaccineType(),appointment, centerResponseDto, savedAppointment);
 
+    }
+
+    @Override
+    public CertificateResponseDto getCertificateDose1(int id) throws UserNotFoundException, NotEligibleForDose1Certificate {
+        Optional<User> optionalUser = userRepository.findById(id);
+        if(optionalUser.isEmpty()){
+            throw new UserNotFoundException("Sorry! User is not registered");
+        }
+        if(optionalUser.get().isDose1Taken() == false){
+            throw new NotEligibleForDose1Certificate("Sorry! You're not eligible for Dose 1 certificate");
+        }
+        String message = "Congratulations! " +optionalUser.get().getName()+" You have successfully taken Dose1";
+        CertificateResponseDto certificateResponseDto = new CertificateResponseDto();
+        certificateResponseDto.setMessage(message);
+        certificateResponseDto.setId(optionalUser.get().getId());
+        certificateResponseDto.setDoseNo(DoseNo.DOSE_1);
+
+        return certificateResponseDto;
+    }
+
+    @Override
+    public CertificateResponseDto getCertificateDose2(int id) throws UserNotFoundException, NotEligibleForDose1Certificate, NotEligibleForDose2Certificate {
+        Optional<User> optionalUser = userRepository.findById(id);
+        if(optionalUser.isEmpty()){
+            throw new UserNotFoundException("Sorry! User is not registered");
+        }
+
+        if(optionalUser.get().isDose1Taken() == false){
+            throw new NotEligibleForDose1Certificate("Sorry! You've not taken dose 1");
+        }
+        if(optionalUser.get().isDose2Taken() == false){
+            throw new NotEligibleForDose2Certificate("Sorry! You're not eligible for certificate");
+        }
+        String message = "Congratulations! " +optionalUser.get().getName()+" You fully vaccinated";
+        CertificateResponseDto certificateResponseDto = new CertificateResponseDto();
+        certificateResponseDto.setMessage(message);
+        certificateResponseDto.setId(optionalUser.get().getId());
+        certificateResponseDto.setDoseNo(DoseNo.DOSE_2);
+
+        return certificateResponseDto;
     }
 }
